@@ -1,3 +1,4 @@
+// Code by William Joe Brashear
 #include <stdio.h>
 
 void reverse(FILE *output, FILE *input) 
