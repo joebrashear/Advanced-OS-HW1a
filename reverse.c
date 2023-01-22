@@ -48,6 +48,8 @@ int main(int argc, char const *argv[])
         fclose(input);
         exit(1);
     }
+
+    reverse(output, input);
     
     fclose(input);
     fclose(output);
