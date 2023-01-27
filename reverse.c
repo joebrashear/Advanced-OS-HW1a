@@ -11,6 +11,30 @@ typedef struct LinkedList{
     struct LinkedList *next;
 } ListNode;
 
+int is_same(FILE *input, FILE *output)
+{
+    char *input_text = NULL;
+    size_t input_len = 0;
+    char *output_text = NULL;
+    size_t output_len = 0;
+    int is_input_end = 0;
+    int is_output_end = 0;
+
+    while (is_input_end != -1 && is_output_end != -1) 
+    {
+        is_input_end = getline(&input_text, &input_len, input);
+        is_output_end = getline(&output_text, &output_len, output);
+        
+        if (strcmp(input_text, output_text) != 1) 
+        {
+            return 0;
+        }
+    }
+
+    fprintf(stderr, "Input and output file must differ");
+    return 1;
+}
+
 void reverse_to_output(ListNode *head, FILE *output)
 {
     ListNode *temp = NULL;
@@ -35,24 +59,10 @@ void reverse_to_output(ListNode *head, FILE *output)
 ListNode* reverse_ll(ListNode *head) 
 {
     ListNode *prev = NULL;
-    ListNode *output_head = (ListNode *)calloc(1, sizeof(ListNode));
-    if (output_head == NULL) 
-    {
-        fprintf(stderr, "Malloc has failed");
-        deallocate_List(head);
-        exit(1);
-    }
     ListNode *curr = head;
 
     while (curr != NULL)
     {
-        output_head->next = 
-        if (output_head == NULL) 
-        {
-            fprintf(stderr, "Malloc has failed");
-            deallocate_List(head);
-            exit(1);
-        }
         ListNode *temp = curr->next;
         curr->next = prev;
         prev = curr;
@@ -78,7 +88,7 @@ void deallocate_List(ListNode *head)
     return;
 }
 
-void read_text(char *text, size_t len, FILE *input, ListNode *node, ListNode *head)
+int read_text(char *text, size_t len, FILE *input, ListNode *node, ListNode *head)
 {
     
     while (getline(&text, &len, input) != -1) 
@@ -92,7 +102,7 @@ void read_text(char *text, size_t len, FILE *input, ListNode *node, ListNode *he
             fprintf(stderr, "Malloc has failed");
             free(text);
             deallocate_List(head);
-            exit(1);
+            return 1;
         }
 
         node->next->text = (char*)calloc(len, sizeof(char));
@@ -102,7 +112,7 @@ void read_text(char *text, size_t len, FILE *input, ListNode *node, ListNode *he
             fprintf(stderr, "Malloc has failed");
             free(text);
             deallocate_List(head);
-            exit(1);
+            return 1;
         }
         
         strcpy(node->next->text, text);
@@ -115,10 +125,10 @@ void read_text(char *text, size_t len, FILE *input, ListNode *node, ListNode *he
         node = node->next;
     }
 
-    return;
+    return 0;
 }
 
-void reverse(FILE *output, FILE *input) 
+int reverse(FILE *output, FILE *input) 
 {
     char *text = NULL;
     size_t len = 0;
@@ -128,22 +138,25 @@ void reverse(FILE *output, FILE *input)
     if (node == NULL) 
     {
         fprintf(stderr, "Malloc has failed");
-        exit(1);
+        return 1;
     }
 
-    ListNode *input_head = node;
+    ListNode *head = node;
 
-    read_text(text, len, input, node, input_head);
+    if (read_text(text, len, input, node, head) == 1)
+    {
+        return 1;
+    }
 
     // free dummy head
-    ListNode *temp = input_head;
-    input_head = input_head->next;
+    ListNode *temp = head;
+    head = head->next;
     free(temp);
+    
+    head = reverse_ll(head);
+    reverse_to_output(head, output);
 
-    ListNode *output_head = reverse_ll(input_head);
-    reverse_to_output(output_head, output);
-
-    return;
+    return 0;
 }
 
 int main(int argc, char const *argv[])
@@ -176,7 +189,19 @@ int main(int argc, char const *argv[])
 
     
 
-    reverse(output, input);
+    if (reverse(output, input) == 1) 
+    {
+        fclose(input);
+        fclose(output);
+        exit(1);
+    }
+
+    if (is_same(input, output) == 1) 
+    {
+        fclose(input);
+        fclose(output);
+        exit(1);
+    }
     
     fclose(input);
     fclose(output);
