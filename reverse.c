@@ -22,6 +22,7 @@ void reverse_to_output(ListNode *head, FILE *output)
         fprintf(output, "%s", head->text);
         temp = head;
         head = head->next;
+        free(temp->text);
         free(temp);
     }
 
@@ -36,6 +37,7 @@ void deallocate_List(ListNode *head)
     {
         temp = head;
         head = head->next;
+        free(temp->text);
         free(temp);
     }
 
@@ -63,7 +65,6 @@ int read_text(char *text, size_t len, FILE *input, ListNode *node, ListNode *hea
     
     while (getline(&text, &len, input) != -1) 
     {
-        
         // Store line in Linked List
         node->next = (ListNode*)calloc(1, sizeof(ListNode));
 
@@ -95,6 +96,8 @@ int read_text(char *text, size_t len, FILE *input, ListNode *node, ListNode *hea
         node = node->next;
     }
 
+    free(text);
+
     return 0;
 }
 
@@ -107,7 +110,7 @@ int reverse(FILE *output, FILE *input)
 
     if (node == NULL) 
     {
-        fprintf(stderr, "Malloc has failed\n");
+        fprintf(stderr, "Malloc has failed for node\n");
         return 1;
     }
 
@@ -134,9 +137,9 @@ int main(int argc, char const *argv[])
 {
     FILE *input = NULL;
     FILE *output = NULL;
-    struct stat input_stat;
+    struct stat *input_stat = NULL;
     int input_stat_ret = 0;
-    struct stat output_stat;
+    struct stat *output_stat = NULL;
     int output_stat_ret = 0;
 
     if (debug == 1)
@@ -175,7 +178,16 @@ int main(int argc, char const *argv[])
                     exit(1);
                 }
 
-                input_stat_ret = stat(argv[1], &input_stat);
+                input_stat = malloc(sizeof(struct stat));
+
+                if (input_stat == NULL)
+                {
+                    fprintf(stderr, "Malloc failed for input stat.\n");
+                    fclose(input);
+                    fclose(output);
+                }
+
+                input_stat_ret = stat(argv[1], input_stat);
 
                 if (input_stat_ret < 0)
                 {
@@ -185,23 +197,40 @@ int main(int argc, char const *argv[])
                     exit(1);
                 }
 
-                output_stat_ret = stat(argv[2], &output_stat);
+                output_stat = malloc(sizeof(struct stat));
+
+                if (output_stat == NULL)
+                {
+                    fprintf(stderr, "Malloc failed for output stat.\n");
+                    fclose(input);
+                    fclose(output);
+                    exit(1);
+                }
+
+                output_stat_ret = stat(argv[2], output_stat);
 
                 if (output_stat_ret < 0)
                 {
                     fprintf(stderr, "Cannot get output file stat\n");
                     fclose(input);
                     fclose(output);
+                    free(input_stat);
+                    free(output_stat);
                     exit(1);
                 }
 
-                if (input_stat.st_ino == output_stat.st_ino)
+                if (input_stat->st_ino == output_stat->st_ino)
                 {
                     fprintf(stderr, "reverse: input and output file must differ\n");
                     fclose(input);
                     fclose(output);
+                    free(input_stat);
+                    free(output_stat);
                     exit(1);
                 }
+
+                free(input_stat);
+                free(output_stat);
                 break;
         default:
                 fprintf(stderr, "usage: reverse <input> <output>\n");

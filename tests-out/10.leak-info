@@ -1,0 +1,15 @@
+==10732== Memcheck, a memory error detector
+==10732== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+==10732== Using Valgrind-3.20.0 and LibVEX; rerun with -h for copyright info
+==10732== Command: ./reverse tests/10.in tests-out/10.other
+==10732== Parent PID: 10599
+==10732== 
+==10732== 
+==10732== HEAP SUMMARY:
+==10732==     in use at exit: 0 bytes in 0 blocks
+==10732==   total heap usage: 18 allocs, 18 frees, 10,240 bytes allocated
+==10732== 
+==10732== All heap blocks were freed -- no leaks are possible
+==10732== 
+==10732== For lists of detected and suppressed errors, rerun with: -s
+==10732== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

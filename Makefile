@@ -1,5 +1,5 @@
 all:
-	gcc -Wall -Werror reverse.c -o reverse
+	gcc -Wall -Werror -g reverse.c -o reverse
 clean:
 	rm reverse
 	rm -rf tests-out/

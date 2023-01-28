@@ -1,1 +1,1 @@
-./reverse /no/such/file.txt 2.out
+valgrind --leak-check=yes --log-file="tests-out/3.leak-info" ./reverse /no/such/file.txt 2.out

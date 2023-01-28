@@ -1,1 +1,1 @@
-./reverse in.txt out.txt burger.txt
+valgrind --leak-check=yes --log-file="tests-out/1.leak-info" ./reverse in.txt out.txt burger.txt

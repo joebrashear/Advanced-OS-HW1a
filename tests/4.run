@@ -1,1 +1,1 @@
-./reverse tests/3.out tests/3.out
+valgrind --leak-check=yes --log-file="tests-out/4.leak-info" ./reverse tests/3.out tests/3.out
