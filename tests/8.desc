@@ -1,0 +1,3 @@
+testing if overwriting text file output with more text than input works correctly.
+
+1. Have to precreate 8.other in tests-out folder with an extra line of text

@@ -12,30 +12,6 @@ typedef struct LinkedList{
     struct LinkedList *next;
 } ListNode;
 
-int is_same(FILE *input, FILE *output)
-{
-    char *input_text = NULL;
-    size_t input_len = 0;
-    char *output_text = NULL;
-    size_t output_len = 0;
-    int is_input_end = 0;
-    int is_output_end = 0;
-
-    while (is_input_end != -1 && is_output_end != -1) 
-    {
-        is_input_end = getline(&input_text, &input_len, input);
-        is_output_end = getline(&output_text, &output_len, output);
-        
-        if (strcmp(input_text, output_text) != 1) 
-        {
-            return 0;
-        }
-    }
-
-    fprintf(stderr, "Input and output file must differ\n");
-    return 1;
-}
-
 void reverse_to_output(ListNode *head, FILE *output)
 {
     ListNode *temp = NULL;
@@ -44,6 +20,20 @@ void reverse_to_output(ListNode *head, FILE *output)
     while (head != NULL)
     {
         fprintf(output, "%s", head->text);
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+
+    return;
+}
+
+void deallocate_List(ListNode *head) 
+{
+    ListNode *temp = NULL;
+
+    while (head != NULL)
+    {
         temp = head;
         head = head->next;
         free(temp);
@@ -66,22 +56,6 @@ ListNode* reverse_ll(ListNode *head)
     }
 
     return prev;
-}
-
-
-
-void deallocate_List(ListNode *head) 
-{
-    ListNode *temp = NULL;
-
-    while (head != NULL)
-    {
-        temp = head;
-        head = head->next;
-        free(temp);
-    }
-
-    return;
 }
 
 int read_text(char *text, size_t len, FILE *input, ListNode *node, ListNode *head)
@@ -141,6 +115,7 @@ int reverse(FILE *output, FILE *input)
 
     if (read_text(text, len, input, node, head) == 1)
     {
+        free(node);
         return 1;
     }
 
@@ -164,69 +139,74 @@ int main(int argc, char const *argv[])
     struct stat output_stat;
     int output_stat_ret = 0;
 
-    if (argc > 3 || argc < 1) 
+    if (debug == 1)
     {
-        fprintf(stderr, "usage: reverse <input> <output>\n");
-        exit(1);
+        printf("%d\n", argc);
     }
 
-    if (argc >= 1)
-        input = fopen(argv[1], "r");
-    else
+    switch(argc)
     {
-        char *file_name = NULL;
-        scanf("%s", file_name);
-        input = fopen(file_name, "r");
-    }
+        case 1:
+                input = stdin;
+                output = stdout;
+                break;
+        case 2:
+                input = fopen(argv[1], "r");
+                if (input == NULL) 
+                {
+                    fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
+                    exit(1);
+                }
+                output = stdout;
+                break;
+        case 3:
+                input = fopen(argv[1], "r");
+                if (input == NULL) 
+                {
+                    fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
+                    exit(1);
+                }
 
-    if (input == NULL) 
-    {
-        fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
-        exit(1);
-    }
+                output = fopen(argv[2], "w+");
+                if (output == NULL) 
+                {
+                    fprintf(stderr, "reverse: cannot open file '%s'\n", argv[2]);
+                    fclose(input);
+                    exit(1);
+                }
 
-    if (argc == 3) 
-    {
-        output = fopen(argv[2], "w+");
+                input_stat_ret = stat(argv[1], &input_stat);
 
-        if (output == NULL) 
-        {
-            fprintf(stderr, "reverse: cannot open file '%s'\n", argv[2]);
-            fclose(input);
-            exit(1);
-        }
+                if (input_stat_ret < 0)
+                {
+                    fprintf(stderr, "Cannot get input file stat\n");
+                    fclose(input);
+                    fclose(output);
+                    exit(1);
+                }
 
-        input_stat_ret = stat(argv[1], &input_stat);
+                output_stat_ret = stat(argv[2], &output_stat);
 
-        if (input_stat_ret < 0)
-        {
-            fprintf(stderr, "Cannot get input file stat\n");
-            fclose(input);
-            fclose(output);
-            exit(1);
-        }
+                if (output_stat_ret < 0)
+                {
+                    fprintf(stderr, "Cannot get output file stat\n");
+                    fclose(input);
+                    fclose(output);
+                    exit(1);
+                }
 
-        output_stat_ret = stat(argv[2], &output_stat);
-
-        if (output_stat_ret < 0)
-        {
-            fprintf(stderr, "Cannot get output file stat\n");
-            fclose(input);
-            fclose(output);
-            exit(1);
-        }
-
-        if (input_stat.st_ino == output_stat.st_ino)
-        {
-            fprintf(stderr, "reverse: input and output file must differ\n");
-            fclose(input);
-            fclose(output);
-            exit(1);
-        }
-    }
-    else
-    {
-        output = stdout;
+                if (input_stat.st_ino == output_stat.st_ino)
+                {
+                    fprintf(stderr, "reverse: input and output file must differ\n");
+                    fclose(input);
+                    fclose(output);
+                    exit(1);
+                }
+                break;
+        default:
+                fprintf(stderr, "usage: reverse <input> <output>\n");
+                exit(1);
+                break;
     }
     
     if (reverse(output, input) == 1) 
