@@ -1,7 +1,7 @@
 # AdvancedOS-HW1
 Apart of UT Austin's Online MSCS
 
-This program reverses lines a text file and outputs the results.
+This program reverses lines in a text file and outputs the results.
 
 It requires as input at least one input file.
 
