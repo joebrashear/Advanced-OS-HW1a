@@ -7,6 +7,8 @@ It requires as input at least one input file.
 
 If no output file is specified, then the results will be stored in stdout.
 
+Otherwise, if an output file is specified, the results will be stored in the output file.
+
 ## Instructions for use:
 
 To compile the code, run the below command:
